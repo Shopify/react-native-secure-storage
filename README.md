@@ -4,7 +4,7 @@
 
 This repository is a fork of [oyyq99999/react-native-secure-storage](https://github.com/oyyq99999/react-native-secure-storage).
 
-Due to outdated gradle and `react-native`, we needed to make several updates. We created a [PR](https://github.com/oyyq99999/react-native-secure-storage/pull/46) to the original repository but we have not received any response back as the repository is unmaintained. The changes introduced in the PR are included in this fork.
+Due to outdated developer tools and dependencies, it eventually became impossible to keep the dependency while upgrading our apps to the latest versions of React Native (specifically [v0.67](https://react-native-community.github.io/upgrade-helper/?from=0.66.4&to=0.67.0-rc.5)). We've introduced the required updates and created a [PR to the original repository](https://github.com/oyyq99999/react-native-secure-storage/pull/46). Unfortunately, we have not received any response as the repository is unmaintained. Since Shopify apps depend on this library and there is no easy way to migrate from it, we forked the library under Shopify organization and introduced the updates.
 
 [react-native-keychain](https://github.com/oblador/react-native-keychain) would be a good candidate for replacement but the mechanism for saving and retrieving items on Android differs too much from `react-native-secure-storage` (as described [here](https://github.com/Shopify/react-native-packages/issues/1661#issue-1073117246)).
 
