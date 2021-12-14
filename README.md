@@ -1,5 +1,14 @@
-
 # react-native-secure-storage
+
+## Fork explanation
+
+This repository is a fork of [oyyq99999/react-native-secure-storage](https://github.com/oyyq99999/react-native-secure-storage).
+
+Due to outdated gradle and `react-native`, we needed to make several updates. We created a [PR](https://github.com/oyyq99999/react-native-secure-storage/pull/46) to the original repository but we have not received any response back as the repository is unmaintained. The changes introduced in the PR are included in this fork.
+
+[react-native-keychain](https://github.com/oblador/react-native-keychain) would be a good candidate for replacement but the mechanism for saving and retrieving items on Android differs too much from `react-native-secure-storage` (as described [here](https://github.com/Shopify/react-native-packages/issues/1661#issue-1073117246)).
+
+## About
 
 This package is based on [react-native-keychain](https://www.npmjs.com/package/react-native-keychain) and implemented a secure storage engine. It is compatiable with [redux-persist-sensitive-storage](https://www.npmjs.com/package/redux-persist-sensitive-storage)
 
