@@ -12,7 +12,7 @@
 RCT_EXPORT_MODULE()
 
 // Messages from the comments in <Security/SecBase.h>
-NSString *messageForError(NSError *error)
+NSString *secureStorageMessageForError(NSError *error)
 {
     switch (error.code) {
         case errSecUnimplemented:
@@ -62,14 +62,14 @@ NSString *messageForError(NSError *error)
     }
 }
 
-NSString *codeForError(NSError *error)
+NSString *secureStorageCodeForError(NSError *error)
 {
     return [NSString stringWithFormat:@"%li", (long)error.code];
 }
 
-void rejectWithError(RCTPromiseRejectBlock reject, NSError *error)
+void secureStorageRejectWithError(RCTPromiseRejectBlock reject, NSError *error)
 {
-    return reject(codeForError(error), messageForError(error), nil);
+    return reject(secureStorageCodeForError(error), secureStorageMessageForError(error), nil);
 }
 
 bool isNotNull(NSDictionary *options, NSString *key)
@@ -77,7 +77,7 @@ bool isNotNull(NSDictionary *options, NSString *key)
     return (options && options[key] != nil && options[key] != (id)[NSNull null]);
 }
 
-CFStringRef accessibleValue(NSDictionary *options)
+CFStringRef secureStorageAccessibleValue(NSDictionary *options)
 {
     if (isNotNull(options, @"accessible")) {
         NSDictionary *keyMap = @{
@@ -97,7 +97,7 @@ CFStringRef accessibleValue(NSDictionary *options)
     return kSecAttrAccessibleAfterFirstUnlock;
 }
 
-NSString *serviceValue(NSDictionary *options)
+NSString *secureStorageServiceValue(NSDictionary *options)
 {
     if (isNotNull(options, @"service")) {
         return options[@"service"];
@@ -105,7 +105,7 @@ NSString *serviceValue(NSDictionary *options)
     return [[NSBundle mainBundle] bundleIdentifier];
 }
 
-NSString *accessGroupValue(NSDictionary *options)
+NSString *secureStorageAccessGroupValue(NSDictionary *options)
 {
     if (isNotNull(options, @"accessGroup")) {
         return options[@"accessGroup"];
@@ -132,7 +132,7 @@ NSString *accessGroupValue(NSDictionary *options)
 
 #define kAuthenticationPromptMessage @"authenticationPrompt"
 
-LAPolicy authPolicy(NSDictionary *options)
+LAPolicy secureStorageAuthPolicy(NSDictionary *options)
 {
     if (options && options[kAuthenticationType]) {
         if ([ options[kAuthenticationType] isEqualToString:kAuthenticationTypeBiometrics ]) {
@@ -142,7 +142,7 @@ LAPolicy authPolicy(NSDictionary *options)
     return LAPolicyDeviceOwnerAuthentication;
 }
 
-SecAccessControlCreateFlags accessControlValue(NSDictionary *options)
+SecAccessControlCreateFlags secureStorageAccessControlValue(NSDictionary *options)
 {
     if (options && options[kAccessControlType] && [options[kAccessControlType] isKindOfClass:[NSString class]]) {
         if ([options[kAccessControlType] isEqualToString: kAccessControlUserPresence]) {
@@ -172,7 +172,7 @@ SecAccessControlCreateFlags accessControlValue(NSDictionary *options)
 
 RCT_EXPORT_METHOD(setItem:(NSString *)key value:(NSString *)value options:(NSDictionary *)options resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
-    NSString *service = serviceValue(options);
+    NSString *service = secureStorageServiceValue(options);
     NSDictionary *attributes = @{
                                  (__bridge NSString *)kSecClass: (__bridge id)(kSecClassGenericPassword),
                                  (__bridge NSString *)kSecAttrService: service,
@@ -185,7 +185,7 @@ RCT_EXPORT_METHOD(setItem:(NSString *)key value:(NSString *)value options:(NSDic
 
 RCT_EXPORT_METHOD(getItem:(NSString *)key options:(NSDictionary *)options resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
-    NSString *service = serviceValue(options);
+    NSString *service = secureStorageServiceValue(options);
     NSString *authenticationPrompt = @"Authenticate to retrieve secret data";
     if (options && options[kAuthenticationPromptMessage]) {
         authenticationPrompt = options[kAuthenticationPromptMessage];
@@ -206,7 +206,7 @@ RCT_EXPORT_METHOD(getItem:(NSString *)key options:(NSDictionary *)options resolv
     
     if (osStatus != noErr && osStatus != errSecItemNotFound) {
         NSError *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:osStatus userInfo:nil];
-        return rejectWithError(reject, error);
+        return secureStorageRejectWithError(reject, error);
     }
     
     found = (__bridge NSDictionary*)(foundTypeRef);
@@ -219,13 +219,13 @@ RCT_EXPORT_METHOD(getItem:(NSString *)key options:(NSDictionary *)options resolv
 
 RCT_EXPORT_METHOD(removeItem:(NSString *)key options:(NSDictionary *)options resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
-    NSString *service = serviceValue(options);
+    NSString *service = secureStorageServiceValue(options);
     
     OSStatus osStatus = [self deleteItemForKey:key inService:service];
     
     if (osStatus != noErr && osStatus != errSecItemNotFound) {
         NSError *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:osStatus userInfo:nil];
-        return rejectWithError(reject, error);
+        return secureStorageRejectWithError(reject, error);
     }
     
     return resolve(@(YES));
@@ -233,7 +233,7 @@ RCT_EXPORT_METHOD(removeItem:(NSString *)key options:(NSDictionary *)options res
 
 RCT_EXPORT_METHOD(getAllKeys:(NSDictionary *)options resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
-    NSString *service = serviceValue(options);
+    NSString *service = secureStorageServiceValue(options);
     NSString *authenticationPrompt = @"Authenticate to retrieve secret data";
     if (options && options[kAuthenticationPromptMessage]) {
         authenticationPrompt = options[kAuthenticationPromptMessage];
@@ -254,7 +254,7 @@ RCT_EXPORT_METHOD(getAllKeys:(NSDictionary *)options resolver:(RCTPromiseResolve
     
     if (osStatus != noErr && osStatus != errSecItemNotFound) {
         NSError *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:osStatus userInfo:nil];
-        return rejectWithError(reject, error);
+        return secureStorageRejectWithError(reject, error);
     }
     
     if (result != NULL) {
@@ -267,7 +267,7 @@ RCT_EXPORT_METHOD(getAllKeys:(NSDictionary *)options resolver:(RCTPromiseResolve
 
 RCT_EXPORT_METHOD(canCheckAuthentication:(NSDictionary *)options resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
-    LAPolicy policyToEvaluate = authPolicy(options);
+    LAPolicy policyToEvaluate = secureStorageAuthPolicy(options);
     
     NSError *aerr = nil;
     BOOL canBeProtected = [[LAContext new] canEvaluatePolicy:policyToEvaluate error:&aerr];
@@ -312,9 +312,9 @@ RCT_EXPORT_METHOD(getSupportedBiometryType:(RCTPromiseResolveBlock)resolve rejec
 
 - (void)insertKeychainEntry:(NSDictionary *)attributes withOptions:(NSDictionary * __nullable)options resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject
 {
-    NSString *accessGroup = accessGroupValue(options);
-    CFStringRef accessible = accessibleValue(options);
-    SecAccessControlCreateFlags accessControl = accessControlValue(options);
+    NSString *accessGroup = secureStorageAccessGroupValue(options);
+    CFStringRef accessible = secureStorageAccessibleValue(options);
+    SecAccessControlCreateFlags accessControl = secureStorageAccessControlValue(options);
     
     NSMutableDictionary *mAttributes = attributes.mutableCopy;
     
@@ -322,7 +322,7 @@ RCT_EXPORT_METHOD(getSupportedBiometryType:(RCTPromiseResolveBlock)resolve rejec
         NSError *aerr = nil;
         BOOL canAuthenticate = [[LAContext new] canEvaluatePolicy:LAPolicyDeviceOwnerAuthentication error:&aerr];
         if (aerr || !canAuthenticate) {
-            return rejectWithError(reject, aerr);
+            return secureStorageRejectWithError(reject, aerr);
         }
         
         CFErrorRef error = NULL;
@@ -332,7 +332,7 @@ RCT_EXPORT_METHOD(getSupportedBiometryType:(RCTPromiseResolveBlock)resolve rejec
                                                                      &error);
         
         if (error) {
-            return rejectWithError(reject, aerr);
+            return secureStorageRejectWithError(reject, aerr);
         }
         mAttributes[(__bridge NSString *)kSecAttrAccessControl] = (__bridge id)sacRef;
     } else {
@@ -351,7 +351,7 @@ RCT_EXPORT_METHOD(getSupportedBiometryType:(RCTPromiseResolveBlock)resolve rejec
         dispatch_async(dispatch_get_main_queue(), ^{
             if (osStatus != noErr && osStatus != errSecItemNotFound) {
                 NSError *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:osStatus userInfo:nil];
-                return rejectWithError(reject, error);
+                return secureStorageRejectWithError(reject, error);
             } else {
                 return resolve(@(YES));
             }
